@@ -46,7 +46,9 @@
     // you want Tesseract to use in the "tessdata" folder in the root of the
     // project AND that the "tessdata" folder is a referenced folder and NOT
     // a symbolic group in your project
+    NSLog(@"before");
     G8RecognitionOperation *operation = [[G8RecognitionOperation alloc] initWithLanguage:@"eng"];
+    NSLog(@"after");
 
     // Use the original Tesseract engine mode in performing the recognition
     // (see G8Constants.h) for other engine mode options

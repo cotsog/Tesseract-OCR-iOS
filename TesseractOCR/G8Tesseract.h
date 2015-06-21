@@ -40,6 +40,11 @@ extern NSInteger const kG8MaxCredibleResolution;
 + (NSString *)version;
 
 /**
+ *
+ */
++ (BOOL)loadDawgCacheFromTessdataPath:(NSString*)tessdataPath forLanguages:(NSString*)languages;
+
+/**
  *  Clear any library-level memory caches.
  *  There are a variety of expensive-to-load constant data structures (mostly
  *  language dictionaries) that are cached globally. This function allows the

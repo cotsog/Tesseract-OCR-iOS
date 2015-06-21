@@ -50,6 +50,9 @@ namespace tesseract {
 @property (nonatomic, assign) G8TextlineOrder textlineOrder;
 @property (nonatomic, assign) CGFloat deskewAngle;
 
+- (id)initLanguageModeFromAbsoluteTessdataPath:(NSString*)datapath
+                                  forLanguages:(NSString*)languages NS_DESIGNATED_INITIALIZER;
+
 @end
 
 @implementation G8Tesseract
@@ -61,6 +64,12 @@ namespace tesseract {
                                                      name:UIApplicationDidReceiveMemoryWarningNotification
                                                    object:nil];
     }
+}
+
++ (BOOL)loadDawgCacheFromTessdataPath:(NSString*)tessdataPath forLanguages:(NSString*)languages {
+  
+  G8Tesseract *tesseract = [[G8Tesseract alloc] initLanguageModeFromAbsoluteTessdataPath:tessdataPath forLanguages:languages];
+  return tesseract != nil;
 }
 
 + (void)didReceiveMemoryWarningNotification:(NSNotification*)notification {
@@ -129,8 +138,6 @@ copyFilesFromResources:(BOOL)copyFilesFromResources
                 return nil;
             }
         }
-        _absoluteDataPath = [absoluteDataPath copy];
-        _language = [language copy];
         _configDictionary = configDictionary;
         _configFileNames = configFileNames;
         _engineMode = engineMode;
@@ -143,13 +150,8 @@ copyFilesFromResources:(BOOL)copyFilesFromResources
         _monitor->cancel = tesseractCancelCallbackFunction;
         _monitor->cancel_this = (__bridge void*)self;
 
-        if (self.absoluteDataPath == nil) {
-            // config Tesseract to search trainedData in tessdata folder of the application bundle];
-            _absoluteDataPath = [NSBundle mainBundle].bundlePath;
-        }
-        
-        setenv("TESSDATA_PREFIX", [_absoluteDataPath stringByAppendingString:@"/"].fileSystemRepresentation, 1);
-
+        [self saveAbsoluteDataPath:absoluteDataPath andLanguage:language];
+      
         _tesseract = new tesseract::TessBaseAPI();
 
         BOOL success = [self configEngine];
@@ -158,6 +160,35 @@ copyFilesFromResources:(BOOL)copyFilesFromResources
         }
     }
     return self;
+}
+
+- (void)saveAbsoluteDataPath:(NSString*)absoluteDataPath andLanguage:(NSString*)language {
+  
+  _absoluteDataPath = [absoluteDataPath copy];
+  _language = [language copy];
+
+  if (self.absoluteDataPath == nil) {
+    // config Tesseract to search trainedData in tessdata folder of the application bundle];
+    _absoluteDataPath = [NSBundle mainBundle].bundlePath;
+  }
+  
+  setenv("TESSDATA_PREFIX", [_absoluteDataPath stringByAppendingString:@"/"].fileSystemRepresentation, 1);
+}
+
+- (id)initLanguageModeFromAbsoluteTessdataPath:(NSString*)datapath forLanguages:(NSString*)languages {
+  
+  self = [super init];
+  if (self) {
+    [self saveAbsoluteDataPath:datapath andLanguage:languages];
+    
+    _tesseract = new tesseract::TessBaseAPI();
+    
+    BOOL success = [self configEngineForLanguageMode];
+    if (success == NO) {
+      self = nil;
+    }
+  }
+  return self;
 }
 
 - (void)dealloc
@@ -198,6 +229,12 @@ copyFilesFromResources:(BOOL)copyFilesFromResources
         free(configs);
     }
     return returnCode == 0;
+}
+
+- (BOOL)configEngineForLanguageMode {
+  
+  int returnCode = _tesseract->InitLangMod(self.absoluteDataPath.fileSystemRepresentation, self.language.UTF8String);
+  return returnCode == 0;
 }
 
 - (void)resetFlags

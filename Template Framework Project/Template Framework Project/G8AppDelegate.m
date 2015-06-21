@@ -8,12 +8,17 @@
 //
 
 #import "G8AppDelegate.h"
+#import <TesseractOCR/TesseractOCR.h>
 
 @implementation G8AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     // Override point for customization after application launch.
+    NSLog(@"before");
+    [G8Tesseract loadDawgCacheFromTessdataPath:nil forLanguages:@"eng"];
+    NSLog(@"after");
+  
     return YES;
 }
 							
