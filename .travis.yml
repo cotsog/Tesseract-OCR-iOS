@@ -10,11 +10,11 @@ xcode_sdk:
 xcode_scheme: 
     - Template Framework Project
     - TestsProject
-script: 
-    - if [ $1 = "TestsProject" ]; then xcodebuild -workspace "$TRAVIS_XCODE_WORKSPACE" -scheme "$TRAVIS_XCODE_SCHEME" -sdk "$TRAVIS_XCODE_SDK" build test else xcodebuild -workspace "$TRAVIS_XCODE_WORKSPACE" -scheme "$TRAVIS_XCODE_SCHEME" -sdk "$TRAVIS_XCODE_SDK" build fi
-    - xcodebuild -workspace "$TRAVIS_XCODE_WORKSPACE" -scheme "$TRAVIS_XCODE_SCHEME" -sdk "$TRAVIS_XCODE_SDK" build test
 before_install:
-    ./scripts/before_install.sh
+    - brew uninstall xctool
+    - brew install xctool --HEAD
+    - xctool --version
+    - ./scripts/before_install.sh
 after_success:
     ./scripts/coveralls.rb --extension m --extension mm --exclude-folder include --exclude-folder TestsProject
 
